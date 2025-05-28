@@ -1,7 +1,5 @@
 # Dynamická DDNS u Wedosu (Docker image)
-Docker image pro automatickou změnu IP adresy domény. Jde o fork původního skriptu, který díky kontejnerizaci je možné spustit například v UnRAIDu. V ideálním případě doporučuji nastavit cron aby se tento image periodicky spouštěl.
-
-Docker image je sestaven z poslední verze master větve v Docker Hubu pod názvem [janch32/wedos-ddns](https://hub.docker.com/repository/docker/janch32/wedos-ddns).
+Docker image pro automatickou změnu IP adresy domény. Cron je součástí kontejneru.
 
 ## Jak to funguje?
 Skript zjistí svoji ip adresu počítače, na kterém běží. Poté přeloží doménové jméno na IP adresu a obě IP adresy porovná. Pokud se liší, skript *wedos-updatedns.py* změní přes Wedos WAPI (rozhraní) IP adresu, kam má doména směřovat. Pak standardně čekáte až hodinu, než se změny projeví na všech DNS serverech.
@@ -17,28 +15,19 @@ Parametry se zadávají jako proměnné prostředí při vytváření nebo spou�
  - `PASSWORD` - Heslo k Wedos WAPI účtu
  - `DOMAIN` - hlavní doména pod kterou změny provádíme
  - *(volitelné)* `SUBDOMAIN` - poddoména u které se má A záznam nastavit. Již musí existovat A záznam pod touhle doménou. V případě vynechání se záznam aplikuje na doménu druhého řádu.
+ - *(volitelné)* `CRON_INTERVAL` - standardně je nastaven na 1x za hodinu (klasická cron expression)
 ### Příklady spuštění
 1. Dynamické nastavení IP adresu A záznamu na doméně `subdomain.example.com`
 
-`docker run -it --rm janch32/wedos-ddns -e LOGIN=user@example.com -e PASSWORD=passW0rd! -e DOMAIN=example.com -e SUBDOMAIN=subdomain`
+`docker run -e LOGIN=user@example.com -e PASSWORD=passW0rd! -e DOMAIN=example.com -e SUBDOMAIN=subdomain shelll3/wedos-ddns`
 
 2. Dynamické nastavení IP adresu A záznamu na doméně `example.com`
 
-`docker run -it --rm janch32/wedos-ddns -e LOGIN=user@example.com -e PASSWORD=passW0rd! -e DOMAIN=example.com`
+`docker run -e LOGIN=user@example.com -e PASSWORD=passW0rd! -e DOMAIN=example.com shelll3/wedos-ddns`
+
+3. Dynamické nastavení IP adresu A záznamu na doméně `example.com` jednou za 30 min
+
+`docker run -e LOGIN=user@example.com -e PASSWORD=passW0rd! -e DOMAIN=example.com -e CRON_INTERVAL="*/30 * * * *" shelll3/wedos-ddns`
 
 ## Automatické spouštění skriptu
-1. otevřeme správce úloh ```$ crontab -e```
-2. na konec souboru přidáme tyto dva řádky:
-```
-@reboot     ...sem zadejte váš docker příkaz...
-0 * * * *   ...sem zadejte váš docker příkaz...
-```
-> Skript se spustí při každém (re)startu počítače a pak každou hodinu. Čas si můžete upravit pomocí [konfigurátoru](https://crontab.guru/).
-
-### Automatické spuštění v UnRAIDu
-V případě běhu v UnRAIDu doporučuji plugin [User Scripts](https://forums.unraid.net/topic/48286-plugin-ca-user-scripts/), který umožňuje nastavit cronjoby. V nastavní pluginu stačí přidat nový skript, který může vypadat například takto: (`wedos-ddns` je název vytvořeného docker kontejneru v UnRAIDu)
-
-```sh
-#!/bin/bash
-/usr/bin/docker start wedos-ddns
-```
+Tato verze je upravena a automatické spouštění je již součástí samotného kontejneru, interval spouštění lze nastavit parametrem.

@@ -10,8 +10,11 @@ MANUAL
 1)Set up A domain
 2)Set up your WEDOS API (Czech): http://kb.wedos.com/wapi/aktivace-nastaveni.html
 3)Set container variables as specified few lines below.
-4)Set up cron for automatic running.
 This was tested on Python 3 only and requires requests.
+
+Modified version by:
+Copyright (c) 2025 Shell3
+https://github.com/Shell3/wedos-ddns
 
 Modified version by:
 Copyright (c) 2023 Jan Chaloupka <osobni@janchaloupka.cz>
@@ -76,6 +79,7 @@ API = 'https://api.wedos.com/wapi/json'
 
 
 def get_auth(login=LOGIN, password=PASSWORD):
+    # print login, password
     passhash = hashlib.sha1(password.encode('utf8')).hexdigest()
     phrase = login + passhash + datetime.datetime.now().strftime('%H')
     return hashlib.sha1(phrase.encode('utf8')).hexdigest()
